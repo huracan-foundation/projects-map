@@ -1,0 +1,533 @@
+---
+layout: default
+title: Home
+---
+
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+  crossorigin="anonymous"
+/>
+<style>
+  .map-wrapper {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+  #map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+  #offcanvas {
+    position: absolute;
+    background-color: #fafafa;
+    box-shadow: 0 0 6px rgb(0 0 0 / 30%);
+    width: 308px;
+    max-width: 100%;
+  }
+  .offcanvas-header {
+    color: #fff;
+    background-color: #ed1c24;
+    padding: 10px 24px;
+  }
+  .btn-close {
+    opacity: 0.9;
+  }
+  .metadata-item {
+    display: flex;
+    flex-direction: column;
+    margin: 14px 0;
+  }
+  .metadata-item > * {
+    margin-top: 2px;
+  }
+  .metadata-item label {
+    font-size: 12px;
+    color: rgba(85, 86, 90, 0.7);
+  }
+  .offcanvas-title {
+    margin: 6px 0;
+  }
+  .offcanvas-body {
+    font-size: 14px;
+    padding: 10px 24px 20px;
+  }
+  .offcanvas-body p,
+  .metadata {
+    margin: 16px 0 26px;
+  }
+  .legend {
+    background: #fff;
+    padding: 10px;
+    margin: 10px;
+    border: 2px solid #55565a;
+    box-shadow: rgb(0 0 0 / 30%) 0px 1px 4px -1px;
+  }
+  .legend-title {
+    font-size: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+  }
+  .legend-item-icon {
+    width: 40px;
+    margin: -6px -6px -6px -8px;
+  }
+  .gm-control-active > img {
+    box-sizing: content-box;
+    display: none !important;
+    left: 50%;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .gm-control-active:not(.fs-true) > img:nth-child(1),
+  .gm-control-active.fs-true > img:nth-child(2) {
+    display: block !important;
+  }
+  .gm-control-active:hover > img {
+    opacity: 0.75;
+  }
+  .gm-control-active:disabled > img {
+    opacity: 0.5;
+  }
+  .gm-control-active:disabled:hover {
+    cursor: auto !important;
+  }
+</style>
+
+<template id="offCanvasContent">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasLabel"></h5>
+    <button
+      type="button"
+      class="btn-close btn-close-white"
+      data-bs-dismiss="offcanvas"
+      aria-label="Close"
+    ></button>
+  </div>
+  <div class="offcanvas-body"></div>
+</template>
+
+<div class="map-wrapper">
+  <div
+    class="offcanvas offcanvas-start"
+    id="offcanvas"
+    data-bs-backdrop="false"
+    tabindex="-1"
+    aria-labelledby="offcanvasLabel"
+  ></div>
+  <div id="map"></div>
+  <div id="legend" class="legend">
+    <h3 class="legend-title">Legend</h3>
+  </div>
+
+  <div class="controls fullscreen-control">
+    <button
+      draggable="false"
+      aria-label="Toggle fullscreen view"
+      title="Toggle fullscreen view"
+      type="button"
+      class="gm-fullscreen-control"
+      style="
+        background: none rgb(255, 255, 255);
+        border: 0px;
+        margin: 10px;
+        padding: 0px;
+        text-transform: none;
+        appearance: none;
+        position: absolute;
+        cursor: pointer;
+        user-select: none;
+        border-radius: 2px;
+        height: 40px;
+        width: 40px;
+        box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+        overflow: hidden;
+        top: 0px;
+        right: 0px;
+      "
+    >
+      <img
+        src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2018%2018%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M0%200v6h2V2h4V0H0zm16%200h-4v2h4v4h2V0h-2zm0%2016h-4v2h6v-6h-2v4zM2%2012H0v6h6v-2H2v-4z%22/%3E%3C/svg%3E"
+        alt="Enter full screen"
+        style="height: 18px; width: 18px"
+      />
+
+      <img
+        src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2018%2018%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M4%204H0v2h6V0H4v4zm10%200V0h-2v6h6V4h-4zm-2%2014h2v-4h4v-2h-6v6zM0%2014h4v4h2v-6H0v2z%22/%3E%3C/svg%3E"
+        alt="Exit full screen"
+        style="height: 18px; width: 18px"
+      />
+    </button>
+  </div>
+</div>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+  crossorigin="anonymous"
+></script>
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+<script>
+  // Static config
+  const locations = {{ site.data.locations | jsonify }};
+  const markerTypes = {
+    ONGOING_PROJECT: "ONGOING_PROJECT",
+    PAST_PROJECT: "PAST_PROJECT",
+  };
+  const markerConfig = {
+    [markerTypes.ONGOING_PROJECT]: {
+      label: "Ongoing Projects",
+      fillColor: "#ed1c24",
+    },
+    [markerTypes.PAST_PROJECT]: {
+      label: "Past Projects",
+      fillColor: "#006A6E",
+    },
+  };
+  const projectTypeConfig = {
+    NEW: {
+      enabled: true,
+      markerType: markerTypes.ONGOING_PROJECT,
+    },
+    PAST: {
+      enabled: true,
+      markerType: markerTypes.PAST_PROJECT,
+    },
+    ONGOING: {
+      enabled: true,
+      markerType: markerTypes.ONGOING_PROJECT,
+    },
+  };
+  const clusterSVG = window.btoa(`
+        <svg fill="#ED1C24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+          <circle cx="120" cy="120" opacity=".8" r="70" />
+          <circle cx="120" cy="120" opacity=".4" r="90" />
+          <circle cx="120" cy="120" opacity=".2" r="110" />
+        </svg>`);
+
+  const markerSVG = ({ markerType, selected } = {}) => {
+    const { fillColor, fillOpacity, strokeOpacity } =
+      markerConfig[markerType] || {};
+
+    return window.btoa(`
+      <svg width="65" height="65" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+        <defs>
+          <style type="text/css"><![CDATA[
+            .shadow {
+              -webkit-filter: drop-shadow(1px 1px 0.75px rgb(0 0 0 / 0.15));
+              filter: drop-shadow(1px 1px 0.75px rgb(0 0 0 / 0.15));
+            }
+          ]]></style>
+        </defs>
+        ${
+          selected
+            ? `<circle class="shadow" fill="white" cx="17.5" cy="18" opacity=".75" r="15" />`
+            : ""
+        }
+        <svg x="5" y="6.25" viewBox="0 0 36 36">
+          <path class="shadow" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${fillColor}" fill-opacity="1" stroke="white" stroke-width="0.5" />
+        </svg>
+        <circle fill="white" cx="17" cy="15.25" opacity="1" stroke="${fillColor}" stroke-width="0.5" r="2.75" />
+      </svg>`);
+  };
+
+  function initMap() {
+    const contentTemplate = document.querySelector("#offCanvasContent");
+    const offCanvasNode = document.getElementById("offcanvas");
+    let visibleMarker = null;
+    let animationTimeout;
+
+    const unselectMarker = (marker) => {
+      if (!marker) {
+        return;
+      }
+
+      const { markerType } = marker;
+
+      cancelAnimation();
+      marker.setIcon(getIconProps({ markerType }));
+      marker.setZIndex(undefined);
+    };
+
+    offCanvasNode.addEventListener("hide.bs.offcanvas", function () {
+      unselectMarker(visibleMarker);
+    });
+
+    document.addEventListener("click", (evt) => {
+      const instance = bootstrap.Offcanvas.getInstance(offCanvasNode);
+
+      if (!instance) {
+        return;
+      }
+      let targetNode = evt.target; // clicked element
+
+      do {
+        if (targetNode === offCanvasNode) {
+          // This is a click inside. Do nothing, just return.
+          return;
+        }
+
+        // Click on google map image (marker, marker cluster icon, etc)
+        const src = targetNode.getAttribute && targetNode.getAttribute("src");
+        if (src === "https://maps.gstatic.com/mapfiles/transparent.png") {
+          const title = targetNode.parentNode.getAttribute("title");
+
+          // Click on marker. Do nothing, just return.
+          if (title) {
+            return;
+          }
+          // Click on something other than a marker; continue traversing;
+        }
+        // Go up the DOM
+        targetNode = targetNode.parentNode;
+      } while (targetNode);
+
+      // This is a click outside.
+      bootstrap.Offcanvas.getInstance(offCanvasNode).hide();
+    });
+
+    function isFullscreen(element) {
+      return (
+        (document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement) == element
+      );
+    }
+
+    function requestFullscreen(element) {
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullScreen) {
+        element.webkitRequestFullScreen();
+      } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+      } else if (element.msRequestFullScreen) {
+        element.msRequestFullScreen();
+      }
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+
+    const showDetailsOverlay = (marker) => {
+      cancelAnimation();
+      const {
+        projectName,
+        locationName,
+        description,
+        markerType,
+        numberOfChildren,
+      } = marker;
+      unselectMarker(visibleMarker);
+      visibleMarker = marker;
+
+      const offCanvasContentNode = contentTemplate.content.cloneNode(true);
+      offCanvasContentNode.querySelector(".offcanvas-title").innerText =
+        projectName || locationName;
+      const bodyNode = offCanvasContentNode.querySelector(".offcanvas-body");
+
+      const sections = [
+        {
+          label: "description",
+          value: description,
+        },
+      ];
+
+      if (locationName) {
+        sections.push({
+          label: "location",
+          value: locationName,
+        });
+      }
+
+      if (numberOfChildren) {
+        sections.push({
+          label: "number of children",
+          value: numberOfChildren,
+        });
+      }
+
+      if (sections.length) {
+        sections.forEach(({ label, value }) => {
+          const itemNode = document.createElement("div");
+          itemNode.className = "metadata-item";
+          itemNode.innerHTML = `<label>${label}</label><div>${value}</div>`;
+          bodyNode.appendChild(itemNode);
+        });
+      }
+
+      offCanvasNode.innerHTML = "";
+      offCanvasNode.appendChild(offCanvasContentNode);
+
+      // Initialize the off canvas overlay
+      const bsOffcanvas = new bootstrap.Offcanvas(offcanvas);
+      bsOffcanvas.show();
+
+      visibleMarker.setAnimation(google.maps.Animation.BOUNCE);
+      animationTimeout = setTimeout(() => {
+        cancelAnimation();
+      }, 750);
+
+      marker.setZIndex(Number(google.maps.Marker.MAX_ZINDEX) + 1000);
+      marker.setIcon(getIconProps({ markerType, selected: true }));
+    };
+
+    // Override full screen behavior to allow overlay to be included in full screen view
+    // From https://developers.google.com/maps/documentation/javascript/examples/control-replacement#maps_control_replacement-javascript
+    function initFullScreenControl(map) {
+      const elementToSendFullscreen = map.getDiv().parentNode;
+      const fullscreenControl = document.querySelector(".gm-fullscreen-control");
+
+      map.controls[google.maps.ControlPosition.RIGHT_TOP].push(fullscreenControl);
+      fullscreenControl.classList.add("gm-control-active");
+
+      fullscreenControl.onclick = function () {
+        const isFS = fullscreenControl.classList.contains("fs-true");
+        if (isFS) {
+          exitFullscreen();
+        } else {
+          requestFullscreen(elementToSendFullscreen);
+        }
+
+        fullscreenControl.classList.toggle("fs-true");
+      };
+    }
+
+    const cancelAnimation = () => {
+      if (animationTimeout) {
+        clearTimeout(animationTimeout);
+        visibleMarker.setAnimation(google.maps.Animation.NULL);
+      }
+    };
+
+    // Static content dependnent on maps api
+    const getIconProps = (options) => ({
+      url: `data:image/svg+xml;base64,${markerSVG(options)}`,
+      scaledSize: new google.maps.Size(65, 65),
+      anchor: new google.maps.Point(25, 45),
+    });
+
+    const getMarkers = (map) => {
+      const markers = [];
+      const bounds = new google.maps.LatLngBounds();
+
+      locations.forEach(
+        ({
+          location,
+          projectName,
+          locationName,
+          description,
+          projectType,
+          numberOfChildren,
+        }) => {
+          const { enabled, markerType } = projectTypeConfig[projectType];
+
+          if (!enabled) {
+            return;
+          }
+          const marker = new google.maps.Marker({
+            position: location,
+            icon: getIconProps({ markerType }),
+            title: locationName || projectName,
+            animation: google.maps.Animation.DROP,
+            optimized: false,
+            projectName,
+            locationName,
+            description,
+            markerType,
+            numberOfChildren: projectType === "PAST" ? numberOfChildren : null,
+          });
+
+          bounds.extend(location);
+
+          google.maps.event.addListener(marker, "click", () => {
+            const offCanvasWidth = offCanvasNode
+              ? offCanvasNode.offsetWidth
+              : null;
+
+            // Center and then offset by half of overlay width
+            map.panTo(marker.getPosition());
+            map.panBy(-offCanvasWidth / 2, 0);
+            showDetailsOverlay(marker);
+          });
+
+          markers.push(marker);
+        }
+      );
+
+      return { markers, bounds };
+    };
+
+    const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 2.5,
+      center: { lat: 10, lng: 10 },
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      gestureHandling: "greedy",
+    });
+
+    const { markers, bounds } = getMarkers(map);
+
+    new markerClusterer.MarkerClusterer({
+      map,
+      markers,
+      renderer: {
+        render: function ({ count, position }, stats) {
+          return new google.maps.Marker({
+            position,
+            icon: {
+              url: `data:image/svg+xml;base64,${clusterSVG}`,
+              scaledSize: new google.maps.Size(45, 45),
+            },
+            label: {
+              text: String(count),
+              color: "white",
+              fontSize: "12px",
+            },
+            // adjust zIndex to be above other markers
+            zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
+          });
+        },
+      },
+    });
+
+    const legendNode = document.getElementById("legend");
+    Object.keys(markerConfig).forEach((markerType) => {
+      const { label, fillColor } = markerConfig[markerType] || {};
+
+      const { url } = getIconProps({ markerType });
+      const div = document.createElement("div");
+      div.className = "legend-item";
+
+      div.innerHTML = `<img class="legend-item-icon" src="${url}"/>${label}`;
+      legendNode.appendChild(div);
+    });
+
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(legendNode);
+    map.fitBounds(bounds);
+    initFullScreenControl(map);
+  }
+</script>
+
+<script
+  src="https://maps.googleapis.com/maps/api/js?key={{ site.env.GOOGLE_MAPS_API_KEY }}&callback=initMap&v=weekly"
+  defer
+></script>
