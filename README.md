@@ -1,4 +1,4 @@
-# google-marker-clusterer-spike
+# projects-map
 
 ## Github Pages Build
 

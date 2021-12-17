@@ -1,6 +1,6 @@
 .phony: default
 default:
-	bundle install
+	bundle install && rbenv rehash
 
 .phony: local
 local:
