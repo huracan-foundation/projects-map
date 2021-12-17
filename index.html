@@ -241,8 +241,11 @@ title: Home
   function initMap() {
     const contentTemplate = document.querySelector("#offCanvasContent");
     const offCanvasNode = document.getElementById("offcanvas");
-    let visibleMarker = null;
-    let animationTimeout;
+    let visibleMarker, map, markers, bounds, animationTimeout;
+
+    const fitBounds = () => {
+      map && bounds && map.fitBounds(bounds);
+    }
 
     const unselectMarker = (marker) => {
       if (!marker) {
@@ -391,7 +394,11 @@ title: Home
 
     // Override full screen behavior to allow overlay to be included in full screen view
     // From https://developers.google.com/maps/documentation/javascript/examples/control-replacement#maps_control_replacement-javascript
-    function initFullScreenControl(map) {
+    function initFullScreenControl() {
+      if (!map) {
+        return;
+      }
+
       const elementToSendFullscreen = map.getDiv().parentNode;
       const fullscreenControl = document.querySelector(".gm-fullscreen-control");
 
@@ -407,6 +414,7 @@ title: Home
         }
 
         fullscreenControl.classList.toggle("fs-true");
+        fitBounds();
       };
     }
 
@@ -424,9 +432,24 @@ title: Home
       anchor: new google.maps.Point(25, 45),
     });
 
-    const getMarkers = (map) => {
-      const markers = [];
-      const bounds = new google.maps.LatLngBounds();
+    const setMap = () => {
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 2.5,
+        center: { lat: 10, lng: 10 },
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        gestureHandling: "greedy",
+      });
+    }
+
+    const setMarkersAndBounds = () => {
+      if (!map) {
+        return;
+      }
+
+      markers = [];
+      bounds = new google.maps.LatLngBounds();
 
       locations.forEach(
         ({
@@ -442,6 +465,7 @@ title: Home
           if (!enabled) {
             return;
           }
+
           const marker = new google.maps.Marker({
             position: location,
             icon: getIconProps({ markerType }),
@@ -471,20 +495,10 @@ title: Home
           markers.push(marker);
         }
       );
-
-      return { markers, bounds };
     };
 
-    const map = new google.maps.Map(document.getElementById("map"), {
-      zoom: 2.5,
-      center: { lat: 10, lng: 10 },
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false,
-      gestureHandling: "greedy",
-    });
-
-    const { markers, bounds } = getMarkers(map);
+    setMap();
+    setMarkersAndBounds();
 
     new markerClusterer.MarkerClusterer({
       map,
@@ -522,8 +536,8 @@ title: Home
     });
 
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(legendNode);
-    map.fitBounds(bounds);
-    initFullScreenControl(map);
+    fitBounds();
+    initFullScreenControl();
   }
 </script>
 
