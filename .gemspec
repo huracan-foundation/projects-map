@@ -1,0 +1,1 @@
+spec.add_development_dependency "bundler", "2.2.33"
