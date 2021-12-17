@@ -18,9 +18,9 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
+google_maps_api_key: AIzaSyC_-NGDykCYRs7Hyz8pOkSkO4bDsDSAKtk
+
 # Build settings
-plugins:
-  - jekyll-dotenv
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
