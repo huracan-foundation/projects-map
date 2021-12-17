@@ -406,14 +406,14 @@ title: Home
       fullscreenControl.classList.add("gm-control-active");
 
       fullscreenControl.onclick = function () {
-        const isFS = fullscreenControl.classList.contains("fs-true");
-        if (isFS) {
+        if (isFullscreen(elementToSendFullscreen)) {
           exitFullscreen();
+          fullscreenControl.classList.remove("fs-true");
         } else {
           requestFullscreen(elementToSendFullscreen);
+          fullscreenControl.classList.add("fs-true");
         }
 
-        fullscreenControl.classList.toggle("fs-true");
         fitBounds();
       };
     }
