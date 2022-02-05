@@ -18,7 +18,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-google_maps_api_key: AIzaSyDWzCEih9viVsIsPHLM-BtUQJTilr5GBi8
+google_maps_api_key: AIzaSyC_-NGDykCYRs7Hyz8pOkSkO4bDsDSAKtk
 
 # Build settings
 # Exclude from processing.
