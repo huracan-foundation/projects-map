@@ -22,7 +22,7 @@ Note: A separate API key should be created for local dev purposes where `127.0.0
 
 ## Deployment
 
-There is a GitHub action which builds the static site from src and commits it to the `github-pages` branch, wich is then deployed at [](https://huracan-foundation.github.io/projects-map/). See `.github/woorkflows/github-pages.yml` for more.
+There is a GitHub action which builds the static site from src and commits it to the `github-pages` branch, wich is then deployed at [https://huracan-foundation.github.io/projects-map/](https://huracan-foundation.github.io/projects-map/). See `.github/workflows/github-pages.yml` for more.
 
 ## Build utils
 
